@@ -2,6 +2,7 @@ package com.company;
 
 
 
+import com.vividsolutions.jts.geom.Point;
 import info.pavie.basicosmparser.model.Element;
 import info.pavie.basicosmparser.model.Node;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
@@ -19,7 +20,6 @@ import java.util.Map;
 import info.pavie.basicosmparser.controller.*;
 import info.pavie.basicosmparser.model.*;
 
-import javax.swing.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -33,11 +33,17 @@ public class Main {
 
     public static void main(String[] args) {
 
-        osmParser = new OSMParser();
+
+
+
+        createSVGPoints();
+    }
+
+    public static List<Node> getListOfNodes() {
+
+
 
         List<Node> listOfNodes = new ArrayList<>();
-        List<Way> listOfWays = new ArrayList<>();
-        List<Relation> listOfRelations = new ArrayList<>();
 
         try {
 
@@ -51,31 +57,67 @@ public class Main {
 
                     Node node = (Node)entry.getValue();
                     listOfNodes.add(node);
-
-                } else if(key.contains("W")) {
-
-                    Way way = (Way)entry.getValue();
-                    listOfWays.add(way);
-
-                } else if (key.contains("R")) {
-
-                    Relation relation = (Relation)entry.getValue();
-                    listOfRelations.add(relation);
                 }
 
             }
-
-
-
         } catch (IOException | SAXException e) {
             e.printStackTrace();
         }
 
-
-        createSVGPoint();
+        return listOfNodes;
     }
 
-    public static void createSVGPoint() {
+    public static List<Way> getListOfWays() {
+
+        List<Way> listOfWays = new ArrayList<>();
+
+        try {
+
+            Map<String,Element> result = osmParser.parse(osmFile);
+
+            for (Map.Entry<String, Element> entry : result.entrySet()) {
+
+                String key = entry.getKey();
+
+                if(key.contains("W")) {
+
+                    Way way = (Way)entry.getValue();
+                    listOfWays.add(way);
+                }
+            }
+        } catch (IOException | SAXException e) {
+            e.printStackTrace();
+        }
+
+        return listOfWays;
+    }
+
+    public static List<Relation> getListOfRelations() {
+        List<Relation> listOfRelations = new ArrayList<>();
+
+        try {
+
+            Map<String,Element> result = osmParser.parse(osmFile);
+
+            for (Map.Entry<String, Element> entry : result.entrySet()) {
+
+                String key = entry.getKey();
+
+                if(key.contains("R")) {
+
+                    Relation relation = (Relation)entry.getValue();
+                    listOfRelations.add(relation);
+                }
+            }
+        } catch (IOException | SAXException e) {
+            e.printStackTrace();
+        }
+
+        return listOfRelations;
+    }
+    
+
+    public static void createSVGPoints() {
         DOMImplementation implementation = SVGDOMImplementation.getDOMImplementation();
 
         //creating new document
@@ -89,22 +131,22 @@ public class Main {
         svgRoot.setAttributeNS(null, "width", "400");
         svgRoot.setAttributeNS(null, "height", "450");
 
-        org.w3c.dom.Element rectangle = document.createElementNS(svgNS, "rect");
-        rectangle.setAttributeNS(null, "x", "10");
-        rectangle.setAttributeNS(null, "y", "20");
-        rectangle.setAttributeNS(null, "width", "100");
-        rectangle.setAttributeNS(null, "height", "50");
-        rectangle.setAttributeNS(null, "fill", "red");
 
-        org.w3c.dom.Element rectangle2 = document.createElementNS(svgNS, "rect");
-        rectangle2.setAttributeNS(null, "x", "30");
-        rectangle2.setAttributeNS(null, "y", "30");
-        rectangle2.setAttributeNS(null, "width", "100");
-        rectangle2.setAttributeNS(null, "height", "50");
-        rectangle2.setAttributeNS(null, "fill", "red");
+        List<Node> listOfNodes = getListOfNodes();
 
-        svgRoot.appendChild(rectangle);
-        svgRoot.appendChild(rectangle2);
+        for (Node node: listOfNodes) {
+
+            org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
+            circle.setAttributeNS(null, "cx", String.valueOf(node.getLat()));
+            circle.setAttributeNS(null, "cy", String.valueOf(node.getLon()));
+            circle.setAttributeNS(null, "r", "2");
+            circle.setAttributeNS(null, "stroke", "black");
+            circle.setAttributeNS(null, "stroke-width", "3");
+            circle.setAttributeNS(null, "fill", "red");
+
+            svgRoot.appendChild(circle);
+
+        }
 
 
 
