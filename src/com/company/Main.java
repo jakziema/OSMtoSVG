@@ -5,16 +5,13 @@ package com.company;
 import info.pavie.basicosmparser.model.Element;
 import info.pavie.basicosmparser.model.Node;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
-import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 
-import java.io.File;
-import java.io.IOException;
 
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +63,6 @@ public class Main {
                     listOfRelations.add(relation);
                 }
 
-
-
-
-
             }
 
 
@@ -103,54 +96,44 @@ public class Main {
         rectangle.setAttributeNS(null, "height", "50");
         rectangle.setAttributeNS(null, "fill", "red");
 
+        org.w3c.dom.Element rectangle2 = document.createElementNS(svgNS, "rect");
+        rectangle2.setAttributeNS(null, "x", "30");
+        rectangle2.setAttributeNS(null, "y", "30");
+        rectangle2.setAttributeNS(null, "width", "100");
+        rectangle2.setAttributeNS(null, "height", "50");
+        rectangle2.setAttributeNS(null, "fill", "red");
+
         svgRoot.appendChild(rectangle);
-
-        saveDocumentFile(document);
-
-
-    }
+        svgRoot.appendChild(rectangle2);
 
 
-    public static  void saveDocumentFile (Document document) {
+
+        String svgAsString = toString(document);
+
+        System.out.println(svgAsString);
 
 
-//            TransformerFactory tFactory =
-//                    TransformerFactory.newInstance();
-//        Transformer transformer =
-//                null;
-//        try {
-//            transformer = tFactory.newTransformer();
-//        } catch (TransformerConfigurationException e) {
-//            e.printStackTrace();
-//        }
-//
-//        DOMSource source = new DOMSource(document);
-//            StreamResult result = new StreamResult(new File("map.xml"));
-//        try {
-//            transformer.transform(source, result);
-//        } catch (TransformerException e) {
-//            e.printStackTrace();
-//        }
 
-        String filename = "map.xml";
-
-        Source source = new DOMSource(document);
-
-        File file = new File(filename);
-        Result result = new StreamResult(file);
-
-        Transformer xformer = null;
-        try {
-            xformer = TransformerFactory.newInstance().newTransformer();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        }
-        try {
-            xformer.transform(source, result);
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
 
     }
+
+
+    public static String toString(Document doc) {
+        try {
+            StringWriter sw = new StringWriter();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer transformer = tf.newTransformer();
+            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+
+            transformer.transform(new DOMSource(doc), new StreamResult(sw));
+            return sw.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error converting to String", ex);
+        }
+    }
+
 
 }
