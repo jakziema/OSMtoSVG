@@ -115,7 +115,7 @@ public class Main {
 
         return listOfRelations;
     }
-    
+
 
     public static void createSVGPoints() {
         DOMImplementation implementation = SVGDOMImplementation.getDOMImplementation();
@@ -128,8 +128,8 @@ public class Main {
         org.w3c.dom.Element svgRoot = document.getDocumentElement();
 
         //width and height of
-        svgRoot.setAttributeNS(null, "width", "400");
-        svgRoot.setAttributeNS(null, "height", "450");
+        svgRoot.setAttributeNS(null, "width", "60");
+        svgRoot.setAttributeNS(null, "height", "20");
 
 
         List<Node> listOfNodes = getListOfNodes();
@@ -137,14 +137,36 @@ public class Main {
         for (Node node: listOfNodes) {
 
             org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
-            circle.setAttributeNS(null, "cx", String.valueOf(node.getLat()));
-            circle.setAttributeNS(null, "cy", String.valueOf(node.getLon()));
+            circle.setAttributeNS(null, "cx", String.valueOf(node.getLon()));
+            circle.setAttributeNS(null, "cy", String.valueOf(node.getLat()));
             circle.setAttributeNS(null, "r", "2");
             circle.setAttributeNS(null, "stroke", "black");
             circle.setAttributeNS(null, "stroke-width", "3");
             circle.setAttributeNS(null, "fill", "red");
 
             svgRoot.appendChild(circle);
+
+        }
+
+        List<Way> listOfWays = getListOfWays();
+
+        for (Way way: listOfWays) {
+            org.w3c.dom.Element polyline = document.createElementNS(svgNS, "polyline");
+
+            List<Node> listOfNodesInWay = way.getNodes();
+
+            String points = " ";
+
+            for(Node node: listOfNodesInWay) {
+
+                points += String.valueOf(node.getLon()) + "," + String.valueOf(node.getLat()) + " ";
+
+            }
+
+            polyline.setAttributeNS(null,  "points", points);
+            polyline.setAttributeNS(null, "style", "fill:none;stroke:black;stroke-width:3");
+
+            svgRoot.appendChild(polyline);
 
         }
 
