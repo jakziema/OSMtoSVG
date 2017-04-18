@@ -1,24 +1,24 @@
 package com.company;
 
-
-
-import com.vividsolutions.jts.geom.Point;
-import info.pavie.basicosmparser.model.Element;
-import info.pavie.basicosmparser.model.Node;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.geotools.data.DataStore;
+import org.geotools.data.DataStoreFinder;
+import org.geotools.data.FeatureSource;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.opengis.feature.Attribute;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.filter.Filter;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
-
 
 import java.io.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import info.pavie.basicosmparser.controller.*;
-import info.pavie.basicosmparser.model.*;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
@@ -27,95 +27,56 @@ import javax.xml.transform.stream.StreamResult;
 
 public class Main {
 
-    static OSMParser osmParser = new OSMParser();
-    static File osmFile = new File("map.osm");
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException{
 
 
+    createSVGPoints();
 
-
-        createSVGPoints();
     }
 
-    public static List<Node> getListOfNodes() {
+    public static List<MyPoint> getListOfPointsFromFile(String filename) throws IOException {
+         List<MyPoint> listOfPoints = new ArrayList<>();
+
+        File file = new File(filename);
+        Map<String, Object> map = new HashMap<>();
+        map.put("url", file.toURI().toURL());
+
+        DataStore dataStore = DataStoreFinder.getDataStore(map);
+        String typeName = dataStore.getTypeNames()[0];
+
+        System.out.println(dataStore.getInfo().toString());
 
 
 
-        List<Node> listOfNodes = new ArrayList<>();
+        FeatureSource<SimpleFeatureType, SimpleFeature> source = dataStore.getFeatureSource(typeName);
+        Filter filter = Filter.INCLUDE; // ECQL.toFilter("BBOX(THE_GEOM, 10,20,30,40)")
+        FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
 
-        try {
+        FeatureIterator<SimpleFeature> features = collection.features();
 
-            Map<String,Element> result = osmParser.parse(osmFile);
 
-            for (Map.Entry<String, Element> entry : result.entrySet()) {
-
-                String key = entry.getKey();
-
-                if(key.contains("N")) {
-
-                    Node node = (Node)entry.getValue();
-                    listOfNodes.add(node);
-                }
-
-            }
-        } catch (IOException | SAXException e) {
-            e.printStackTrace();
+        while (features.hasNext()) {
+            SimpleFeature feature = features.next();
+            //System.out.print(feature.getID());
+            //System.out.print(": ");
+            //System.out.println(feature.getDefaultGeometry().toString());
+            String x = String.valueOf(feature.getDefaultGeometryProperty().getBounds().getMinX());
+            String y = String.valueOf(feature.getDefaultGeometryProperty().getBounds().getMinY());
+            MyPoint point = new MyPoint(x,y);
+            listOfPoints.add(point);
         }
 
-        return listOfNodes;
+        return listOfPoints;
     }
 
-    public static List<Way> getListOfWays() {
 
-        List<Way> listOfWays = new ArrayList<>();
 
-        try {
 
-            Map<String,Element> result = osmParser.parse(osmFile);
 
-            for (Map.Entry<String, Element> entry : result.entrySet()) {
 
-                String key = entry.getKey();
 
-                if(key.contains("W")) {
-
-                    Way way = (Way)entry.getValue();
-                    listOfWays.add(way);
-                }
-            }
-        } catch (IOException | SAXException e) {
-            e.printStackTrace();
-        }
-
-        return listOfWays;
-    }
-
-    public static List<Relation> getListOfRelations() {
-        List<Relation> listOfRelations = new ArrayList<>();
-
-        try {
-
-            Map<String,Element> result = osmParser.parse(osmFile);
-
-            for (Map.Entry<String, Element> entry : result.entrySet()) {
-
-                String key = entry.getKey();
-
-                if(key.contains("R")) {
-
-                    Relation relation = (Relation)entry.getValue();
-                    listOfRelations.add(relation);
-                }
-            }
-        } catch (IOException | SAXException e) {
-            e.printStackTrace();
-        }
-
-        return listOfRelations;
-    }
-    
 
     public static void createSVGPoints() {
         DOMImplementation implementation = SVGDOMImplementation.getDOMImplementation();
@@ -128,29 +89,60 @@ public class Main {
         org.w3c.dom.Element svgRoot = document.getDocumentElement();
 
         //width and height of
-        svgRoot.setAttributeNS(null, "width", "400");
-        svgRoot.setAttributeNS(null, "height", "450");
+        svgRoot.setAttributeNS(null, "width", "60");
+        svgRoot.setAttributeNS(null, "height", "20");
 
 
-        List<Node> listOfNodes = getListOfNodes();
+        try {
+            List<MyPoint> listOfPoints = getListOfPointsFromFile("ne_10m_ports.shp");
 
-        for (Node node: listOfNodes) {
+            for (MyPoint point: listOfPoints) {
 
-            org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
-            circle.setAttributeNS(null, "cx", String.valueOf(node.getLat()));
-            circle.setAttributeNS(null, "cy", String.valueOf(node.getLon()));
-            circle.setAttributeNS(null, "r", "2");
-            circle.setAttributeNS(null, "stroke", "black");
-            circle.setAttributeNS(null, "stroke-width", "3");
-            circle.setAttributeNS(null, "fill", "red");
+                org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
+                circle.setAttributeNS(null, "cx", String.valueOf(point.x));
+                circle.setAttributeNS(null, "cy", String.valueOf(point.y));
+                circle.setAttributeNS(null, "r", "0.5");
+                circle.setAttributeNS(null, "stroke", "black");
+                circle.setAttributeNS(null, "stroke-width", "0.5");
+                circle.setAttributeNS(null, "fill", "red");
 
-            svgRoot.appendChild(circle);
+                svgRoot.appendChild(circle);
+
+
+            }
+        } catch(IOException e ) {
+            e.printStackTrace();
+        }
+
+        /**
+        List<Way> listOfWays = getListOfWays();
+
+        for (Way way: listOfWays) {
+            org.w3c.dom.Element polyline = document.createElementNS(svgNS, "polyline");
+
+            List<Node> listOfNodesInWay = way.getNodes();
+
+            String points = " ";
+
+            for(Node node: listOfNodesInWay) {
+
+                points += String.valueOf(node.getLon()) + "," + String.valueOf(node.getLat()) + " ";
+
+            }
+
+            polyline.setAttributeNS(null,  "points", points);
+            polyline.setAttributeNS(null, "style", "fill:none;stroke:black;stroke-width:3");
+
+            svgRoot.appendChild(polyline);
 
         }
+        */
 
 
 
         String svgAsString = toString(document);
+
+
 
         System.out.println(svgAsString);
 
@@ -158,7 +150,6 @@ public class Main {
 
 
     }
-
 
     public static String toString(Document doc) {
         try {
@@ -176,6 +167,8 @@ public class Main {
             throw new RuntimeException("Error converting to String", ex);
         }
     }
+
+
 
 
 }
