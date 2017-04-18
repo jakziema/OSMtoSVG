@@ -62,12 +62,11 @@ public class Main {
             //System.out.print(feature.getID());
             //System.out.print(": ");
             //System.out.println(feature.getDefaultGeometry().toString());
-            String x = String.valueOf(feature.getDefaultGeometryProperty().getBounds().getMinX());
-            String y = String.valueOf(feature.getDefaultGeometryProperty().getBounds().getMinY());
+            double x = feature.getDefaultGeometryProperty().getBounds().getMinX();
+            double y = feature.getDefaultGeometryProperty().getBounds().getMinY() * (-1);
             MyPoint point = new MyPoint(x,y);
             listOfPoints.add(point);
         }
-
         return listOfPoints;
     }
 
@@ -101,10 +100,12 @@ public class Main {
                 org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
                 circle.setAttributeNS(null, "cx", String.valueOf(point.x));
                 circle.setAttributeNS(null, "cy", String.valueOf(point.y));
+                //point.x/y powwinno byc doublem
                 circle.setAttributeNS(null, "r", "0.5");
                 circle.setAttributeNS(null, "stroke", "black");
                 circle.setAttributeNS(null, "stroke-width", "0.5");
                 circle.setAttributeNS(null, "fill", "red");
+
 
                 svgRoot.appendChild(circle);
 
@@ -141,8 +142,13 @@ public class Main {
 
 
         String svgAsString = toString(document);
-
-
+        /*try {
+            PrintWriter out = new PrintWriter("D:\\Studia\\Semestr 8\\TMC\\TMCProjekt\\map.svg");
+            out.println(svgAsString);
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }*/
 
         System.out.println(svgAsString);
 

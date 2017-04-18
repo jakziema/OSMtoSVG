@@ -1,3 +1,5 @@
+package com.company;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -44,7 +46,7 @@ public class SvgDisplay {
     // The SVG canvas.
     protected JSVGCanvas svgCanvas = new JSVGCanvas();
 
-    public SVGApplication(JFrame f) {
+    public SvgDisplay(JFrame f) {
         frame = f;
     }
 
