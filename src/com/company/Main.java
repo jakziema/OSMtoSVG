@@ -1,7 +1,5 @@
 package com.company;
 
-
-
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -13,10 +11,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
-
-
 
 import java.io.*;
 
@@ -26,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 
-import info.pavie.basicosmparser.controller.*;
-import info.pavie.basicosmparser.model.*;
-
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -36,20 +27,12 @@ import javax.xml.transform.stream.StreamResult;
 
 public class Main {
 
-    static OSMParser osmParser = new OSMParser();
-    static File osmFile = new File("map.osm");
-
-
 
 
     public static void main(String[] args) throws IOException{
 
 
     createSVGPoints();
-
-
-
-
 
     }
 
@@ -72,6 +55,7 @@ public class Main {
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection = source.getFeatures(filter);
 
         FeatureIterator<SimpleFeature> features = collection.features();
+
 
         while (features.hasNext()) {
             SimpleFeature feature = features.next();
@@ -117,9 +101,9 @@ public class Main {
                 org.w3c.dom.Element circle = document.createElementNS(svgNS, "circle");
                 circle.setAttributeNS(null, "cx", String.valueOf(point.x));
                 circle.setAttributeNS(null, "cy", String.valueOf(point.y));
-                circle.setAttributeNS(null, "r", "2");
+                circle.setAttributeNS(null, "r", "0.5");
                 circle.setAttributeNS(null, "stroke", "black");
-                circle.setAttributeNS(null, "stroke-width", "3");
+                circle.setAttributeNS(null, "stroke-width", "0.5");
                 circle.setAttributeNS(null, "fill", "red");
 
                 svgRoot.appendChild(circle);
